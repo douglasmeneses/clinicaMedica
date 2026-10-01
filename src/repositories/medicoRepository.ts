@@ -1,3 +1,6 @@
+import { prisma } from "../config/prisma.js";
+import type { MedicoDTO } from "../types/medico.js";
+
 export async function findAll() {
   return await prisma.medico.findMany();
   //SELECT * FROM medicos;

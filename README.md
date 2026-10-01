@@ -14,6 +14,7 @@ API RESTful para gestão de clínica médica desenvolvida em **Node.js** e **Typ
 ## 📌 Funcionalidades
 
 - 🧑‍⚕️ **Gestão de Pacientes**: Cadastro, listagem, busca por identificador, atualização cadastral e remoção.
+- 🩺 **Gestão de Médicos**: Cadastro, listagem, busca por identificador, atualização cadastral e remoção.
 - 📐 **Arquitetura em Camadas**: Separação clara de responsabilidades entre rotas, controladores, regras de negócio (serviços) e acesso a dados (repositórios).
 - 🔒 **Validação de Dados**: Validação e tipagem de entrada via Zod.
 - 🐘 **Persistência Relacional**: Modelagem e queries gerenciadas via Prisma ORM integrado ao PostgreSQL.
@@ -106,6 +107,16 @@ A API estará acessível em `http://localhost:3000`.
 | `POST` | `/pacientes` | Cadastra um novo paciente |
 | `PUT` | `/pacientes/:id` | Atualiza os dados de um paciente existente |
 | `DELETE` | `/pacientes/:id` | Remove um paciente da base de dados |
+
+### Médicos
+
+| Método | Rota | Descrição |
+| :--- | :--- | :--- |
+| `GET` | `/medicos` | Lista todos os médicos cadastrados |
+| `GET` | `/medicos/:id` | Retorna os detalhes de um médico específico |
+| `POST` | `/medicos` | Cadastra um novo médico |
+| `PUT` | `/medicos/:id` | Atualiza os dados de um médico existente |
+| `DELETE` | `/medicos/:id` | Remove um médico da base de dados |
 
 ---
 

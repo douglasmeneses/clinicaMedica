@@ -1,3 +1,6 @@
+import { prisma } from "../config/prisma.js";
+import type { PacienteDTO } from "../types/paciente.js";
+
 export async function findAll() {
   return await prisma.paciente.findMany();
   //SELECT * FROM pacientes;
@@ -10,12 +13,12 @@ export async function findById(id: number) {
 
 export async function create(data: PacienteDTO) {
   return await prisma.paciente.create({ data });
-  //INSERT INTO pacientes (nome, email, telefone) VALUES (?, ?, ?);
+  //INSERT INTO pacientes (nome, cpf, telefone) VALUES (?, ?, ?);
 }
 
 export async function update(id: number, data: PacienteDTO) {
   return await prisma.paciente.update({ where: { id }, data });
-  //UPDATE pacientes SET nome = ?, email = ?, telefone = ? WHERE id = ?;
+  //UPDATE pacientes SET nome = ?, cpf = ?, telefone = ? WHERE id = ?;
 }
 
 export async function remove(id: number) {

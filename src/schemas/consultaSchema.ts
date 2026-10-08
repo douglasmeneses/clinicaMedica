@@ -32,3 +32,13 @@ export const consultaSchema = z.object({
 });
 
 export type ConsultaInput = z.infer<typeof consultaSchema>;
+
+// Schema para os filtros opcionais de consulta na listagem
+export const consultaFiltroSchema = z.object({
+  medicoId: z.coerce.number().optional().openapi({ example: 1 }),
+  pacienteId: z.coerce.number().optional().openapi({ example: 1 }),
+  data: z.string().optional().openapi({ example: "15/10/2026" }),
+  turno: z.enum(["M", "T"] as const).optional().openapi({ example: "M" }),
+});
+
+export type ConsultaFiltroInput = z.infer<typeof consultaFiltroSchema>;

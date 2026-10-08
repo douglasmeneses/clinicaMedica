@@ -3,277 +3,136 @@ import {
   OpenApiGeneratorV3,
   extendZodWithOpenApi,
 } from "@asteasolutions/zod-to-openapi";
-import { z } from "zod";
+import { z, type ZodType, type ZodObject } from "zod";
 import { secretarioSchema } from "../schemas/secretarioSchema.js";
-import { consultaSchema } from "../schemas/consultaSchema.js";
+import { consultaSchema, consultaFiltroSchema } from "../schemas/consultaSchema.js";
 
 extendZodWithOpenApi(z);
 
 export const registry = new OpenAPIRegistry();
 
-// ==========================================
-// 1. Modelos registrados a partir do Zod
-// ==========================================
-const SecretarioModel = registry.register(
-  "Secretario",
-  secretarioSchema.extend({
-    id: z.number().openapi({ example: 1 }),
-  })
-);
+// -------------------------------------------------------------
+// 1. Helpers reutilizáveis (eliminam o boilerplate do OpenAPI)
+// -------------------------------------------------------------
+const idParam = z.object({
+  id: z.coerce.number().openapi({ example: 1, description: "ID numérico" }),
+});
 
-const ConsultaModel = registry.register(
-  "Consulta",
-  consultaSchema.extend({
-    id: z.number().openapi({ example: 1 }),
-  })
-);
+const jsonBody = (schema: ZodType) => ({
+  content: { "application/json": { schema } },
+});
 
-// ==========================================
-// 2. Rotas de Secretários
-// ==========================================
-registry.registerPath({
-  method: "get",
+const jsonResponse = (description: string, schema?: ZodType) => ({
+  description,
+  ...(schema ? jsonBody(schema) : {}),
+});
+
+// Helper que registra os 5 endpoints padrão de um CRUD sem repetição de código
+function registrarCrud({
+  tag,
+  path,
+  nomeModelo,
+  schema,
+  queryFiltros,
+}: {
+  tag: string;
+  path: string;
+  nomeModelo: string;
+  schema: ZodType;
+  queryFiltros?: ZodObject<any>;
+}) {
+  const model = registry.register(
+    nomeModelo,
+    (schema as any).extend({ id: z.number().openapi({ example: 1 }) })
+  );
+
+  // GET /recurso (Listagem)
+  registry.registerPath({
+    method: "get",
+    path,
+    summary: `Lista ${tag.toLowerCase()}`,
+    tags: [tag],
+    ...(queryFiltros ? { request: { query: queryFiltros } } : {}),
+    responses: { 200: jsonResponse(`Lista retornada com sucesso`, z.array(model)) },
+  });
+
+  // GET /recurso/{id} (Buscar por ID)
+  registry.registerPath({
+    method: "get",
+    path: `${path}/{id}`,
+    summary: `Busca ${nomeModelo.toLowerCase()} por ID`,
+    tags: [tag],
+    request: { params: idParam },
+    responses: {
+      200: jsonResponse(`${nomeModelo} encontrado`, model),
+      404: jsonResponse("Não encontrado"),
+    },
+  });
+
+  // POST /recurso (Cadastro)
+  registry.registerPath({
+    method: "post",
+    path,
+    summary: `Cadastra novo ${nomeModelo.toLowerCase()}`,
+    tags: [tag],
+    request: { body: jsonBody(schema) },
+    responses: {
+      201: jsonResponse("Cadastrado com sucesso", model),
+      400: jsonResponse("Erro de validação"),
+    },
+  });
+
+  // PUT /recurso/{id} (Atualização)
+  registry.registerPath({
+    method: "put",
+    path: `${path}/{id}`,
+    summary: `Atualiza ${nomeModelo.toLowerCase()}`,
+    tags: [tag],
+    request: { params: idParam, body: jsonBody(schema) },
+    responses: {
+      200: jsonResponse("Atualizado com sucesso", model),
+      400: jsonResponse("Dados inválidos"),
+      404: jsonResponse("Não encontrado"),
+    },
+  });
+
+  // DELETE /recurso/{id} (Remoção)
+  registry.registerPath({
+    method: "delete",
+    path: `${path}/{id}`,
+    summary: `Remove ${nomeModelo.toLowerCase()}`,
+    tags: [tag],
+    request: { params: idParam },
+    responses: {
+      204: jsonResponse("Removido com sucesso"),
+      404: jsonResponse("Não encontrado"),
+    },
+  });
+
+  return model;
+}
+
+// -------------------------------------------------------------
+// 2. Registro declarativo de cada recurso (1 chamada por CRUD!)
+// -------------------------------------------------------------
+registrarCrud({
+  tag: "Secretários",
   path: "/secretarios",
-  summary: "Lista todos os secretários",
-  tags: ["Secretários"],
-  responses: {
-    200: {
-      description: "Lista de secretários retornada com sucesso",
-      content: {
-        "application/json": {
-          schema: z.array(SecretarioModel),
-        },
-      },
-    },
-  },
+  nomeModelo: "Secretario",
+  schema: secretarioSchema,
 });
 
-registry.registerPath({
-  method: "get",
-  path: "/secretarios/{id}",
-  summary: "Busca um secretário por ID",
-  tags: ["Secretários"],
-  request: {
-    params: z.object({
-      id: z.coerce.number().openapi({ example: 1, description: "ID do secretário" }),
-    }),
-  },
-  responses: {
-    200: {
-      description: "Secretário encontrado",
-      content: {
-        "application/json": {
-          schema: SecretarioModel,
-        },
-      },
-    },
-    404: { description: "Secretário não encontrado" },
-  },
-});
-
-registry.registerPath({
-  method: "post",
-  path: "/secretarios",
-  summary: "Cadastra um novo secretário",
-  tags: ["Secretários"],
-  request: {
-    body: {
-      content: {
-        "application/json": {
-          schema: secretarioSchema,
-        },
-      },
-    },
-  },
-  responses: {
-    201: {
-      description: "Secretário cadastrado com sucesso",
-      content: {
-        "application/json": {
-          schema: SecretarioModel,
-        },
-      },
-    },
-    400: { description: "Erro de validação de dados" },
-  },
-});
-
-registry.registerPath({
-  method: "put",
-  path: "/secretarios/{id}",
-  summary: "Atualiza os dados de um secretário",
-  tags: ["Secretários"],
-  request: {
-    params: z.object({
-      id: z.coerce.number().openapi({ example: 1 }),
-    }),
-    body: {
-      content: {
-        "application/json": {
-          schema: secretarioSchema,
-        },
-      },
-    },
-  },
-  responses: {
-    200: {
-      description: "Secretário atualizado com sucesso",
-      content: {
-        "application/json": {
-          schema: SecretarioModel,
-        },
-      },
-    },
-    400: { description: "Dados inválidos" },
-    404: { description: "Secretário não encontrado" },
-  },
-});
-
-registry.registerPath({
-  method: "delete",
-  path: "/secretarios/{id}",
-  summary: "Remove um secretário por ID",
-  tags: ["Secretários"],
-  request: {
-    params: z.object({
-      id: z.coerce.number().openapi({ example: 1 }),
-    }),
-  },
-  responses: {
-    204: { description: "Secretário removido com sucesso" },
-    404: { description: "Secretário não encontrado" },
-  },
-});
-
-// ==========================================
-// 3. Rotas de Consultas
-// ==========================================
-registry.registerPath({
-  method: "get",
+registrarCrud({
+  tag: "Consultas",
   path: "/consultas",
-  summary: "Lista consultas (com filtros opcionais)",
-  tags: ["Consultas"],
-  request: {
-    query: z.object({
-      medicoId: z.coerce.number().optional().openapi({ example: 1 }),
-      pacienteId: z.coerce.number().optional().openapi({ example: 1 }),
-      data: z.string().optional().openapi({ example: "15/10/2026" }),
-      turno: z.enum(["M", "T"] as const).optional().openapi({ example: "M" }),
-    }),
-  },
-  responses: {
-    200: {
-      description: "Lista de consultas",
-      content: {
-        "application/json": {
-          schema: z.array(ConsultaModel),
-        },
-      },
-    },
-  },
+  nomeModelo: "Consulta",
+  schema: consultaSchema,
+  queryFiltros: consultaFiltroSchema,
 });
 
-registry.registerPath({
-  method: "get",
-  path: "/consultas/{id}",
-  summary: "Busca uma consulta por ID",
-  tags: ["Consultas"],
-  request: {
-    params: z.object({
-      id: z.coerce.number().openapi({ example: 1 }),
-    }),
-  },
-  responses: {
-    200: {
-      description: "Consulta encontrada",
-      content: {
-        "application/json": {
-          schema: ConsultaModel,
-        },
-      },
-    },
-    404: { description: "Consulta não encontrada" },
-  },
-});
-
-registry.registerPath({
-  method: "post",
-  path: "/consultas",
-  summary: "Agenda uma nova consulta",
-  description: "Valida turno (M/T), data (DD/MM/AAAA) e limite de 5 pacientes por turno.",
-  tags: ["Consultas"],
-  request: {
-    body: {
-      content: {
-        "application/json": {
-          schema: consultaSchema,
-        },
-      },
-    },
-  },
-  responses: {
-    201: {
-      description: "Consulta agendada com sucesso",
-      content: {
-        "application/json": {
-          schema: ConsultaModel,
-        },
-      },
-    },
-    400: { description: "Erro de validação ou agenda lotada/conflito" },
-  },
-});
-
-registry.registerPath({
-  method: "put",
-  path: "/consultas/{id}",
-  summary: "Atualiza uma consulta existente",
-  tags: ["Consultas"],
-  request: {
-    params: z.object({
-      id: z.coerce.number().openapi({ example: 1 }),
-    }),
-    body: {
-      content: {
-        "application/json": {
-          schema: consultaSchema,
-        },
-      },
-    },
-  },
-  responses: {
-    200: {
-      description: "Consulta atualizada com sucesso",
-      content: {
-        "application/json": {
-          schema: ConsultaModel,
-        },
-      },
-    },
-    400: { description: "Dados inválidos" },
-    404: { description: "Consulta não encontrada" },
-  },
-});
-
-registry.registerPath({
-  method: "delete",
-  path: "/consultas/{id}",
-  summary: "Cancela/remove uma consulta",
-  tags: ["Consultas"],
-  request: {
-    params: z.object({
-      id: z.coerce.number().openapi({ example: 1 }),
-    }),
-  },
-  responses: {
-    204: { description: "Consulta removida com sucesso" },
-    404: { description: "Consulta não encontrada" },
-  },
-});
-
-// ==========================================
-// 4. Gerador da Documentação OpenAPI 3.0
-// ==========================================
+// -------------------------------------------------------------
+// 3. Gerador do Documento OpenAPI 3.0
+// -------------------------------------------------------------
 const generator = new OpenApiGeneratorV3(registry.definitions);
 
 export const swaggerSpec = generator.generateDocument({
@@ -281,13 +140,7 @@ export const swaggerSpec = generator.generateDocument({
   info: {
     title: "API Clínica Médica",
     version: "1.0.0",
-    description:
-      "Documentação interativa gerada automaticamente a partir dos Schemas do Zod.",
+    description: "Documentação automática gerada a partir dos Schemas do Zod.",
   },
-  servers: [
-    {
-      url: "http://localhost:3000",
-      description: "Servidor Local de Desenvolvimento",
-    },
-  ],
+  servers: [{ url: "http://localhost:3000", description: "Servidor Local" }],
 });

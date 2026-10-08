@@ -1,5 +1,8 @@
 import express, { type Request, type Response, type NextFunction } from "express";
 import dotenv from "dotenv";
+import swaggerUi from "swagger-ui-express";
+import { swaggerSpec } from "./config/swagger.js";
+
 import pacienteRoutes from "./routes/pacienteRoutes.js";
 import medicoRoutes from "./routes/medicoRoutes.js";
 import secretarioRoutes from "./routes/secretarioRoutes.js";
@@ -12,6 +15,10 @@ app.use(express.json());
 
 const PORT: number = Number(process.env.PORT || 3000);
 
+// Documentação interativa Swagger UI
+app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+
+// Rotas da aplicação
 app.use(pacienteRoutes);
 app.use(medicoRoutes);
 app.use(secretarioRoutes);
@@ -24,4 +31,5 @@ app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
 
 app.listen(PORT, () => {
   console.log(`A API subiu na porta ${PORT}`);
+  console.log(`Documentação disponível em: http://localhost:${PORT}/docs`);
 });

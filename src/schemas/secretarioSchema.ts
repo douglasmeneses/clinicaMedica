@@ -16,7 +16,6 @@ export const secretarioSchema = z.object({
     .max(15, "O telefone deve ter no máximo 15 dígitos"),
 
   email: z
-    .string()
     .email("E-mail com formato inválido")
     .nullable()
     .optional(),

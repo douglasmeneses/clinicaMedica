@@ -73,7 +73,6 @@ export const secretarioSchema = z.object({
 
   // Email é opcional, mas se for enviado, precisa ter formato de e-mail válido
   email: z
-    .string()
     .email("E-mail com formato inválido")
     .nullable()
     .optional(),
@@ -89,7 +88,7 @@ export type SecretarioInput = z.infer<typeof secretarioSchema>;
 2. `{ error: "..." }`: Mensagem personalizada se o campo não for enviado no JSON ou for de tipo errado.
 3. `.min(3, "...")`: Garante que o texto não seja vazio nem curto demais.
 4. `.regex(/^\d{11}$/, "...")`: Expressão regular simples que só aceita números e exige exatamente 11 caracteres.
-5. `.email()`: Valida automaticamente se tem `@`, domínio e formato de e-mail.
+5. `z.email(...)`: Valida se o formato do e-mail é válido.
 6. `.nullable().optional()`: O campo pode vir como `null`, `undefined` ou nem ser enviado.
 7. `z.infer<typeof secretarioSchema>`: Extrai o tipo TypeScript automaticamente. Assim, se você mudar a validação no Zod, o tipo do TypeScript atualiza sozinho sem você precisar alterar duas vezes!
 
@@ -137,7 +136,7 @@ export type ConsultaInput = z.infer<typeof consultaSchema>;
 
 ### 1.3 Criando o Middleware Reutilizável de Validação
 
-Em vez de colocar `try/catch` de validação em cada controller, vamos criar um **Middleware** do Express. 
+Em vez de colocar validação em cada controller, vamos criar um **Middleware** do Express. 
 
 O que é um Middleware?  
 É uma função intermediária que intercepta a requisição **antes** dela chegar no Controller. Se os dados forem válidos, ela chama `next()` e deixa passar. Se forem inválidos, ela responde com erro 400 e **nem chega a rodar o Controller**.
@@ -146,48 +145,43 @@ Crie o arquivo: `src/middlewares/validarSchema.ts`
 
 ```typescript
 import type { Request, Response, NextFunction } from "express";
-import { ZodError, type ZodSchema } from "zod";
+import { type ZodType } from "zod";
 
 /**
  * Middleware que recebe um schema do Zod e valida o corpo (req.body) da requisição.
  */
-export function validarBody(schema: ZodSchema) {
+export function validarBody(schema: ZodType) {
   return async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      // safeParse analisa os dados sem lançar exceções inesperadas
-      const resultado = await schema.parseAsync(req.body);
-      
-      // Substitui o req.body pelos dados limpos e validados pelo Zod
-      req.body = resultado;
-      
-      // Tudo certo! Passa para o próximo passo (o controller)
-      return next();
-    } catch (erro) {
-      // Se o erro veio do Zod, formatamos para ficar bem amigável
-      if (erro instanceof ZodError) {
-        const errosFormatados = erro.issues.map((issue) => ({
-          campo: issue.path.join("."),
-          mensagem: issue.message,
-        }));
+    // safeParseAsync analisa os dados sem estourar exceções
+    const resultado = await schema.safeParseAsync(req.body);
 
-        return res.status(400).json({
-          status: "erro_validacao",
-          mensagem: "Os dados enviados são inválidos",
-          detalhes: errosFormatados,
-        });
-      }
+    if (!resultado.success) {
+      // Se a validação falhou, formatamos as mensagens do Zod para o usuário
+      const errosFormatados = resultado.error.issues.map((issue) => ({
+        campo: issue.path.join("."),
+        mensagem: issue.message,
+      }));
 
-      // Se for outro erro, passa para o tratador global de erros
-      return next(erro);
+      return res.status(400).json({
+        status: "erro_validacao",
+        mensagem: "Os dados enviados são inválidos",
+        detalhes: errosFormatados,
+      });
     }
+
+    // Atribui os dados limpos e validados pelo Zod ao req.body
+    req.body = resultado.data;
+
+    // Tudo certo! Passa para o próximo passo (o controller)
+    return next();
   };
 }
 ```
 
 #### 🔍 Explicando o fluxo:
-1. `validarBody(schema)`: É uma função que devolve um middleware configurado para o schema desejado (conceito de *Factory*).
-2. `schema.parseAsync(req.body)`: Tenta validar o corpo da requisição de forma assíncrona.
-3. `erro.issues`: Contém a lista de todos os problemas encontrados. Nós usamos `.map()` para retornar um JSON limpo, dizendo exatamente qual campo falhou e o motivo.
+1. `validarBody(schema: ZodType)`: Recebe qualquer schema tipado do Zod (`ZodType`).
+2. `schema.safeParseAsync(req.body)`: Executa a validação de forma segura. Se der errado, retorna `success: false` com o objeto `error`, sem precisar de `try/catch`.
+3. `resultado.error.issues`: Contém a lista de todos os problemas encontrados. Nós usamos `.map()` para retornar um JSON limpo, dizendo exatamente qual campo falhou e o motivo.
 
 ---
 

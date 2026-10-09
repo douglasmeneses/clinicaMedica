@@ -7,23 +7,52 @@ datasource db {
 }
 
 model Paciente {
-  id           Int      @id @default(autoincrement())
+  id           Int        @id @default(autoincrement())
   nome         String
-  cpf          String   @unique
+  cpf          String     @unique
   telefone     String
-  criadoEm     DateTime @default(now()) @map("criado_em")
-  atualizadoEm DateTime @updatedAt @map("atualizado_em")
+  criadoEm     DateTime   @default(now()) @map("criado_em")
+  atualizadoEm DateTime   @updatedAt @map("atualizado_em")
+  consultas    Consulta[]
 
   @@map("pacientes")
 }
 
 model Medico {
-  id            Int      @id @default(autoincrement())
+  id            Int        @id @default(autoincrement())
   nome          String
-  crm           String   @unique
+  crm           String     @unique
   especialidade String
-  criadoEm      DateTime @default(now()) @map("criado_em")
-  atualizadoEm  DateTime @updatedAt @map("atualizado_em")
+  criadoEm      DateTime   @default(now()) @map("criado_em")
+  atualizadoEm  DateTime   @updatedAt @map("atualizado_em")
+  consultas     Consulta[]
 
   @@map("medicos")
+}
+
+model Secretario {
+  id           Int      @id @default(autoincrement())
+  nome         String
+  cpf          String   @unique
+  telefone     String
+  email        String?  @unique
+  criadoEm     DateTime @default(now()) @map("criado_em")
+  atualizadoEm DateTime @updatedAt @map("atualizado_em")
+
+  @@map("secretarios")
+}
+
+model Consulta {
+  id           Int      @id @default(autoincrement())
+  data         String
+  turno        String
+  medicoId     Int      @map("medico_id")
+  pacienteId   Int      @map("paciente_id")
+  criadoEm     DateTime @default(now()) @map("criado_em")
+  atualizadoEm DateTime @updatedAt @map("atualizado_em")
+
+  medico       Medico   @relation(fields: [medicoId], references: [id], onDelete: Cascade)
+  paciente     Paciente @relation(fields: [pacienteId], references: [id], onDelete: Cascade)
+
+  @@map("consultas")
 }

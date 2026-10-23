@@ -1,4 +1,4 @@
-# 🏥 Clínica Médica — API REST
+# 🏥 Clínica Médica — API REST + Frontend
 
 ![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)
 ![Node.js](https://img.shields.io/badge/Node.js-43853D?style=for-the-badge&logo=node.js&logoColor=white)
@@ -26,16 +26,25 @@ API RESTful para gestão de clínica médica desenvolvida em **Node.js** e **Typ
 
 ```text
 clinicaMedica/
-├── prisma/               # Schema e migrações do Prisma
-├── src/
-│   ├── controllers/      # Recebimento de requisições e respostas HTTP
-│   ├── repositories/     # Interface direta de persistência com o banco
-│   ├── routes/           # Mapeamento e declaração das rotas Express
-│   ├── services/         # Regras de negócio e validações
-│   └── server.ts         # Ponto de entrada e inicialização do servidor
-├── docker-compose.yml    # Orquestração do banco PostgreSQL
-├── package.json
-└── tsconfig.json
+├── api/                  # Backend (Express + Prisma)
+│   ├── prisma/           # Schema e migrações do Prisma
+│   ├── src/
+│   │   ├── controllers/  # Recebimento de requisições e respostas HTTP
+│   │   ├── repositories/ # Interface direta de persistência com o banco
+│   │   ├── routes/       # Mapeamento e declaração das rotas Express
+│   │   ├── services/     # Regras de negócio e validações
+│   │   └── server.ts     # Ponto de entrada e inicialização do servidor
+│   ├── package.json
+│   └── tsconfig.json
+├── frontend/             # Frontend (React + Vite + Mantine)
+│   ├── src/
+│   │   ├── pages/        # Uma tela por arquivo
+│   │   ├── services/     # Chamadas HTTP à API
+│   │   ├── types/        # Tipos compartilhados entre as telas
+│   │   ├── App.tsx       # Layout (AppShell) e navegação
+│   │   └── main.tsx      # Ponto de entrada (MantineProvider)
+│   └── package.json
+└── docker-compose.yml    # Orquestração do banco PostgreSQL
 ```
 
 ---
@@ -67,7 +76,8 @@ cd clinicaMedica
 
 ### 2. Instalar as dependências
 ```bash
-npm install
+cd api && npm install
+cd ../frontend && npm install
 ```
 
 ### 3. Subir o banco de dados via Docker
@@ -76,7 +86,7 @@ docker compose up -d
 ```
 
 ### 4. Configurar variáveis de ambiente
-Crie um arquivo `.env` na raiz do projeto com a URL de conexão:
+Crie um arquivo `api/.env` com a URL de conexão:
 ```env
 DATABASE_URL="postgresql://postgres:postgres@localhost:5432/clinica?schema=public"
 PORT=3000
@@ -84,15 +94,25 @@ PORT=3000
 
 ### 5. Executar as migrações do Prisma
 ```bash
+cd api
 npx prisma migrate dev
 ```
 
-### 6. Iniciar a aplicação em modo de desenvolvimento
+### 6. Iniciar a API em modo de desenvolvimento
 ```bash
+cd api
 npm run dev
 ```
 
-A API estará acessível em `http://localhost:3000`.
+A API estará acessível em `http://localhost:3000` (documentação em `/docs`).
+
+### 7. Iniciar o frontend (em outro terminal)
+```bash
+cd frontend
+npm run dev
+```
+
+O frontend estará acessível em `http://localhost:5173`. Para apontar para outra API, crie `frontend/.env` a partir do `frontend/.env.example`.
 
 ---
 

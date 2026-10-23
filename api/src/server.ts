@@ -1,5 +1,6 @@
 import express, { type Request, type Response, type NextFunction } from "express";
 import dotenv from "dotenv";
+import cors from "cors";
 import swaggerUi from "swagger-ui-express";
 import { swaggerSpec } from "./config/swagger.js";
 
@@ -11,6 +12,7 @@ import consultaRoutes from "./routes/consultaRoutes.js";
 dotenv.config();
 
 const app = express();
+app.use(cors({ origin: process.env.FRONTEND_URL || "http://localhost:5173" }));
 app.use(express.json());
 
 const PORT: number = Number(process.env.PORT || 3000);

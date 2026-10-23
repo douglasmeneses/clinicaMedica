@@ -5,6 +5,7 @@ import {
   Button,
   Paper,
   PasswordInput,
+  SimpleGrid,
   Stack,
   Text,
   TextInput,
@@ -84,10 +85,14 @@ export function CadastroSecretarioPage({
   }
 
   return (
-    <Paper withBorder shadow="sm" p="lg" radius="md">
-      <Title order={2} mb="md">
-        Cadastro de secretário
-      </Title>
+    <Paper withBorder shadow="md" p="xl" radius="md" w="100%" maw={560}>
+      <Text c="blue" fw={700} size="sm">
+        Clínica Médica
+      </Text>
+      <Title order={2}>Cadastro de secretário</Title>
+      <Text c="dimmed" size="sm" mb="lg">
+        Preencha seus dados para criar o acesso
+      </Text>
 
       <form onSubmit={form.onSubmit(cadastrar)}>
         <Stack>
@@ -100,37 +105,45 @@ export function CadastroSecretarioPage({
             key={form.key("nome")}
             {...form.getInputProps("nome")}
           />
-          <TextInput
-            label="CPF"
-            description="Somente os 11 números"
-            withAsterisk
-            key={form.key("cpf")}
-            {...form.getInputProps("cpf")}
-          />
-          <TextInput
-            label="Telefone"
-            withAsterisk
-            key={form.key("telefone")}
-            {...form.getInputProps("telefone")}
-          />
+          {/* 1 coluna no celular, 2 a partir de telas "sm" (48em) */}
+          <SimpleGrid cols={{ base: 1, sm: 2 }}>
+            <TextInput
+              label="CPF"
+              placeholder="Somente números"
+              withAsterisk
+              key={form.key("cpf")}
+              {...form.getInputProps("cpf")}
+            />
+            <TextInput
+              label="Telefone"
+              placeholder="DDD + número"
+              withAsterisk
+              key={form.key("telefone")}
+              {...form.getInputProps("telefone")}
+            />
+          </SimpleGrid>
           <TextInput
             label="E-mail"
+            placeholder="nome@clinica.com (opcional)"
             key={form.key("email")}
             {...form.getInputProps("email")}
           />
-          <PasswordInput
-            label="Senha"
-            description="Pelo menos 8 caracteres"
-            withAsterisk
-            key={form.key("senha")}
-            {...form.getInputProps("senha")}
-          />
-          <PasswordInput
-            label="Confirmar senha"
-            withAsterisk
-            key={form.key("confirmarSenha")}
-            {...form.getInputProps("confirmarSenha")}
-          />
+          <SimpleGrid cols={{ base: 1, sm: 2 }}>
+            <PasswordInput
+              label="Senha"
+              placeholder="Mínimo 8 caracteres"
+              withAsterisk
+              key={form.key("senha")}
+              {...form.getInputProps("senha")}
+            />
+            <PasswordInput
+              label="Confirmar senha"
+              placeholder="Repita a senha"
+              withAsterisk
+              key={form.key("confirmarSenha")}
+              {...form.getInputProps("confirmarSenha")}
+            />
+          </SimpleGrid>
 
           <Button type="submit" loading={form.submitting}>
             Cadastrar

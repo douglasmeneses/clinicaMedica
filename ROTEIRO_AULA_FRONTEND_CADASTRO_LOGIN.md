@@ -363,6 +363,7 @@ import {
   Button,
   Paper,
   PasswordInput,
+  SimpleGrid,
   Stack,
   Text,
   TextInput,
@@ -442,10 +443,14 @@ export function CadastroSecretarioPage({
   }
 
   return (
-    <Paper withBorder shadow="sm" p="lg" radius="md">
-      <Title order={2} mb="md">
-        Cadastro de secretário
-      </Title>
+    <Paper withBorder shadow="md" p="xl" radius="md" w="100%" maw={560}>
+      <Text c="blue" fw={700} size="sm">
+        Clínica Médica
+      </Text>
+      <Title order={2}>Cadastro de secretário</Title>
+      <Text c="dimmed" size="sm" mb="lg">
+        Preencha seus dados para criar o acesso
+      </Text>
 
       <form onSubmit={form.onSubmit(cadastrar)}>
         <Stack>
@@ -458,37 +463,45 @@ export function CadastroSecretarioPage({
             key={form.key("nome")}
             {...form.getInputProps("nome")}
           />
-          <TextInput
-            label="CPF"
-            description="Somente os 11 números"
-            withAsterisk
-            key={form.key("cpf")}
-            {...form.getInputProps("cpf")}
-          />
-          <TextInput
-            label="Telefone"
-            withAsterisk
-            key={form.key("telefone")}
-            {...form.getInputProps("telefone")}
-          />
+          {/* 1 coluna no celular, 2 a partir de telas "sm" (48em) */}
+          <SimpleGrid cols={{ base: 1, sm: 2 }}>
+            <TextInput
+              label="CPF"
+              placeholder="Somente números"
+              withAsterisk
+              key={form.key("cpf")}
+              {...form.getInputProps("cpf")}
+            />
+            <TextInput
+              label="Telefone"
+              placeholder="DDD + número"
+              withAsterisk
+              key={form.key("telefone")}
+              {...form.getInputProps("telefone")}
+            />
+          </SimpleGrid>
           <TextInput
             label="E-mail"
+            placeholder="nome@clinica.com (opcional)"
             key={form.key("email")}
             {...form.getInputProps("email")}
           />
-          <PasswordInput
-            label="Senha"
-            description="Pelo menos 8 caracteres"
-            withAsterisk
-            key={form.key("senha")}
-            {...form.getInputProps("senha")}
-          />
-          <PasswordInput
-            label="Confirmar senha"
-            withAsterisk
-            key={form.key("confirmarSenha")}
-            {...form.getInputProps("confirmarSenha")}
-          />
+          <SimpleGrid cols={{ base: 1, sm: 2 }}>
+            <PasswordInput
+              label="Senha"
+              placeholder="Mínimo 8 caracteres"
+              withAsterisk
+              key={form.key("senha")}
+              {...form.getInputProps("senha")}
+            />
+            <PasswordInput
+              label="Confirmar senha"
+              placeholder="Repita a senha"
+              withAsterisk
+              key={form.key("confirmarSenha")}
+              {...form.getInputProps("confirmarSenha")}
+            />
+          </SimpleGrid>
 
           <Button type="submit" loading={form.submitting}>
             Cadastrar
@@ -559,6 +572,16 @@ A página de cadastro **não sabe** como trocar de tela: quem decide qual tela a
 
 `<Anchor component="button" type="button">` é um link com cara de link, mas que por baixo é um `<button>`: não navega para outra URL, só dispara o `onClick`. O `type="button"` impede que ele envie o formulário.
 
+### 4.7 O visual: card, cabeçalho e duas colunas
+
+Três detalhes de layout deixam a tela com cara de sistema, e não de página em branco:
+
+- **Style props.** Todo componente do Mantine aceita props de estilo curtas: `w="100%"` (largura), `maw={560}` (largura **máxima**, em px), `p="xl"` (padding), `mb="lg"` (margem embaixo), `c="dimmed"` (cor do texto). Juntas, `w="100%" maw={560}` dizem "ocupe a largura disponível, mas no máximo 560px": no celular o card encolhe, e no monitor grande ele não estica.
+- **Cabeçalho do card.** Três linhas: o nome do sistema pequeno em azul (`Text c="blue" fw={700}`), o título da tela (`Title`) e uma frase de apoio em cinza (`Text c="dimmed"`). Usar `placeholder` em vez de `description` deixa a dica **dentro** do campo e economiza uma linha por campo.
+- **`SimpleGrid` responsivo.** `cols={{ base: 1, sm: 2 }}` significa: 1 coluna por padrão (celular) e 2 colunas a partir do breakpoint `sm` (48em, cerca de 768px). Colocar CPF ao lado de Telefone e Senha ao lado de Confirmar deixa o formulário mais baixo, e ele cabe numa tela de notebook sem rolar. Os breakpoints são os mesmos que configuramos no `postcss.config.cjs`.
+
+Quem centraliza o card na tela é o `App` (Parte 6). A página só diz o tamanho máximo do próprio card.
+
 ---
 
 ## 🔐 PARTE 5: A tela de login
@@ -614,10 +637,14 @@ export function LoginPage({ onLogin, onIrParaCadastro }: LoginPageProps) {
   }
 
   return (
-    <Paper withBorder shadow="sm" p="lg" radius="md">
-      <Title order={2} mb="md">
-        Entrar
-      </Title>
+    <Paper withBorder shadow="md" p="xl" radius="md" w="100%" maw={400}>
+      <Text c="blue" fw={700} size="sm">
+        Clínica Médica
+      </Text>
+      <Title order={2}>Entrar</Title>
+      <Text c="dimmed" size="sm" mb="lg">
+        Acesse com seu CPF e senha
+      </Text>
 
       <form onSubmit={form.onSubmit(entrar)}>
         <Stack>
@@ -625,12 +652,13 @@ export function LoginPage({ onLogin, onIrParaCadastro }: LoginPageProps) {
 
           <TextInput
             label="CPF"
-            description="Somente os 11 números"
+            placeholder="Somente números"
             key={form.key("cpf")}
             {...form.getInputProps("cpf")}
           />
           <PasswordInput
             label="Senha"
+            placeholder="Sua senha"
             key={form.key("senha")}
             {...form.getInputProps("senha")}
           />
@@ -675,7 +703,7 @@ type HomePageProps = {
 
 export function HomePage({ secretario, onSair }: HomePageProps) {
   return (
-    <Paper withBorder shadow="sm" p="lg" radius="md">
+    <Paper withBorder shadow="md" p="xl" radius="md" w="100%" maw={400}>
       <Stack>
         <Title order={2}>Olá, {secretario.nome}!</Title>
         <Text c="dimmed">Você está logado(a) com o CPF {secretario.cpf}.</Text>
@@ -692,7 +720,7 @@ E substitua `frontend/src/App.tsx` por:
 
 ```tsx
 import { useState } from "react";
-import { Container } from "@mantine/core";
+import { Center } from "@mantine/core";
 import type { Secretario } from "@clinica/shared/secretario";
 import { CadastroSecretarioPage } from "./pages/CadastroSecretarioPage.tsx";
 import { HomePage } from "./pages/HomePage.tsx";
@@ -706,7 +734,8 @@ export default function App() {
   const [tela, setTela] = useState<Tela>("login");
 
   return (
-    <Container size="xs" py="xl">
+    // Fundo cinza na tela inteira, com o card centralizado na horizontal e na vertical
+    <Center mih="100vh" bg="gray.1" p="md">
       {secretario ? (
         <HomePage secretario={secretario} onSair={() => setSecretario(null)} />
       ) : tela === "login" ? (
@@ -717,7 +746,7 @@ export default function App() {
       ) : (
         <CadastroSecretarioPage onIrParaLogin={() => setTela("login")} />
       )}
-    </Container>
+    </Center>
   );
 }
 ```
@@ -728,7 +757,7 @@ export default function App() {
 - **Funções como props.** `onLogin={setSecretario}` entrega a própria função de atualizar o estado: quando a `LoginPage` chama `onLogin(secretario)`, o `App` re-renderiza com o secretário preenchido e a `HomePage` aparece. `onSair={() => setSecretario(null)}` faz o caminho inverso.
 - **Renderização condicional.** O ternário encadeado (`a ? X : b ? Y : Z`) escolhe entre três telas. Leia em voz alta com a turma: "tem secretário? mostra a Home. Senão, a tela é login? mostra o Login. Senão, mostra o Cadastro".
 - **`type Tela = "login" | "cadastro"`**: o TypeScript só aceita esses dois valores. Um `setTela("cadstro")` com erro de digitação não compila.
-- **`Container size="xs"`** centraliza a página e limita a largura, o que basta para formulários.
+- **`<Center mih="100vh" bg="gray.1" p="md">`** pinta a tela inteira de cinza claro e centraliza o card nas duas direções. O `mih="100vh"` (altura mínima = 100% da altura da janela) é o que permite centralizar na vertical: sem ele, o `Center` teria só a altura do card, e o card ficaria colado no topo.
 
 ### Limitações, de propósito
 

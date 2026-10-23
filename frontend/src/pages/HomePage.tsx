@@ -8,7 +8,7 @@ type HomePageProps = {
 
 export function HomePage({ secretario, onSair }: HomePageProps) {
   return (
-    <Paper withBorder shadow="sm" p="lg" radius="md">
+    <Paper withBorder shadow="md" p="xl" radius="md" w="100%" maw={400}>
       <Stack>
         <Title order={2}>Olá, {secretario.nome}!</Title>
         <Text c="dimmed">Você está logado(a) com o CPF {secretario.cpf}.</Text>

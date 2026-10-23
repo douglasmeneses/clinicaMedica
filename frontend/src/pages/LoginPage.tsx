@@ -46,10 +46,14 @@ export function LoginPage({ onLogin, onIrParaCadastro }: LoginPageProps) {
   }
 
   return (
-    <Paper withBorder shadow="sm" p="lg" radius="md">
-      <Title order={2} mb="md">
-        Entrar
-      </Title>
+    <Paper withBorder shadow="md" p="xl" radius="md" w="100%" maw={400}>
+      <Text c="blue" fw={700} size="sm">
+        Clínica Médica
+      </Text>
+      <Title order={2}>Entrar</Title>
+      <Text c="dimmed" size="sm" mb="lg">
+        Acesse com seu CPF e senha
+      </Text>
 
       <form onSubmit={form.onSubmit(entrar)}>
         <Stack>
@@ -57,12 +61,13 @@ export function LoginPage({ onLogin, onIrParaCadastro }: LoginPageProps) {
 
           <TextInput
             label="CPF"
-            description="Somente os 11 números"
+            placeholder="Somente números"
             key={form.key("cpf")}
             {...form.getInputProps("cpf")}
           />
           <PasswordInput
             label="Senha"
+            placeholder="Sua senha"
             key={form.key("senha")}
             {...form.getInputProps("senha")}
           />

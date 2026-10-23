@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Container } from "@mantine/core";
+import { Center } from "@mantine/core";
 import type { Secretario } from "@clinica/shared/secretario";
 import { CadastroSecretarioPage } from "./pages/CadastroSecretarioPage.tsx";
 import { HomePage } from "./pages/HomePage.tsx";
@@ -13,7 +13,8 @@ export default function App() {
   const [tela, setTela] = useState<Tela>("login");
 
   return (
-    <Container size="xs" py="xl">
+    // Fundo cinza na tela inteira, com o card centralizado na horizontal e na vertical
+    <Center mih="100vh" bg="gray.1" p="md">
       {secretario ? (
         <HomePage secretario={secretario} onSair={() => setSecretario(null)} />
       ) : tela === "login" ? (
@@ -24,6 +25,6 @@ export default function App() {
       ) : (
         <CadastroSecretarioPage onIrParaLogin={() => setTela("login")} />
       )}
-    </Container>
+    </Center>
   );
 }

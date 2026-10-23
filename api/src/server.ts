@@ -1,0 +1,39 @@
+import express, { type Request, type Response, type NextFunction } from "express";
+import dotenv from "dotenv";
+import cors from "cors";
+import swaggerUi from "swagger-ui-express";
+import { swaggerSpec } from "./config/swagger.js";
+
+import pacienteRoutes from "./routes/pacienteRoutes.js";
+import medicoRoutes from "./routes/medicoRoutes.js";
+import secretarioRoutes from "./routes/secretarioRoutes.js";
+import consultaRoutes from "./routes/consultaRoutes.js";
+
+dotenv.config();
+
+const app = express();
+
+// Libera o front (outra origem: porta 5173) para chamar a API pelo navegador
+app.use(cors({ origin: process.env.FRONTEND_URL || "http://localhost:5173" }));
+app.use(express.json());
+
+const PORT: number = Number(process.env.PORT || 3000);
+
+// Documentação interativa Swagger UI
+app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+
+// Rotas da aplicação
+app.use(pacienteRoutes);
+app.use(medicoRoutes);
+app.use(secretarioRoutes);
+app.use(consultaRoutes);
+
+// Middleware global de tratamento de erros
+app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
+  return res.status(400).json({ mensagem: err.message });
+});
+
+app.listen(PORT, () => {
+  console.log(`A API subiu na porta ${PORT}`);
+  console.log(`Documentação disponível em: http://localhost:${PORT}/docs`);
+});

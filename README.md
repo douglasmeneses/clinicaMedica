@@ -40,7 +40,10 @@ clinicaMedica/
 │       ├── routes/       # Mapeamento e declaração das rotas Express
 │       ├── services/     # Regras de negócio
 │       └── server.ts     # Ponto de entrada e inicialização do servidor
-└── frontend/             # React + Vite + Mantine (criado na aula de frontend)
+└── frontend/             # React + Vite + Mantine
+    └── src/
+        ├── pages/        # Telas (login, cadastro, home)
+        └── services/     # Chamadas à API (axios)
 ```
 
 ---
@@ -103,6 +106,14 @@ npm run dev -w api
 ```
 
 A API estará acessível em `http://localhost:3000` e a documentação em `http://localhost:3000/docs`.
+
+### 7. Iniciar o frontend
+Em outro terminal, também na raiz:
+```bash
+npm run dev -w frontend
+```
+
+O frontend estará acessível em `http://localhost:5173`. Para apontar para outra URL da API, crie `frontend/.env` a partir de `frontend/.env.example`.
 
 ---
 

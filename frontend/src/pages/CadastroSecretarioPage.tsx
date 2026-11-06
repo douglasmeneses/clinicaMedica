@@ -11,6 +11,7 @@ import {
   Title,
 } from "@mantine/core";
 import axios from "axios";
+import { cadastroSecretarioSchema } from "@clinica/shared/secretario";
 import { cadastrarSecretario } from "../services/api.ts";
 
 type Props = {
@@ -48,6 +49,25 @@ export function CadastroSecretarioPage({ onVoltarParaLogin }: Props) {
     if (senha !== confirmarSenha) {
       setErroConfirmarSenha("As senhas não conferem");
       return;
+    }
+
+    // Confere o formato aqui mesmo, com as mesmas regras da API
+    const validacao = cadastroSecretarioSchema.safeParse({
+      nome,
+      cpf,
+      telefone,
+      email,
+      senha,
+    });
+    if (!validacao.success) {
+      for (const problema of validacao.error.issues) {
+        if (problema.path[0] === "nome") setErroNome(problema.message);
+        if (problema.path[0] === "cpf") setErroCpf(problema.message);
+        if (problema.path[0] === "telefone") setErroTelefone(problema.message);
+        if (problema.path[0] === "email") setErroEmail(problema.message);
+        if (problema.path[0] === "senha") setErroSenha(problema.message);
+      }
+      return; // não chama a API
     }
 
     setCarregando(true);

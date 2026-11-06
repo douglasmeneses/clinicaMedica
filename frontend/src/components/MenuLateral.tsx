@@ -1,17 +1,24 @@
 import type { ReactNode } from 'react'
 import { AppShell, Avatar, Box, Burger, Button, Group, NavLink, Stack, Text, ThemeIcon } from '@mantine/core'
 import { useDisclosure } from '@mantine/hooks'
-import { IconCalendarEvent, IconLogout, IconStethoscope } from '@tabler/icons-react'
+import { IconCalendarEvent, IconLogout, IconStethoscope, IconUsers } from '@tabler/icons-react'
 
 type Props = {
   nome: string
   onSair: () => void
+  pagina: string // qual item do menu está marcado
+  onTrocarPagina: (pagina: string) => void
   children: ReactNode
 }
 
 // Moldura das telas de dentro: menu escuro à esquerda (no celular, atrás do ☰) e o conteúdo no meio
-export function MenuLateral({ nome, onSair, children }: Props) {
-  const [menuAberto, { toggle: alternarMenu }] = useDisclosure()
+export function MenuLateral({ nome, onSair, pagina, onTrocarPagina, children }: Props) {
+  const [menuAberto, { toggle: alternarMenu, close: fecharMenu }] = useDisclosure()
+
+  function abrir(novaPagina: string) {
+    onTrocarPagina(novaPagina)
+    fecharMenu() // no celular, fecha o menu depois de escolher
+  }
 
   return (
     <AppShell
@@ -38,10 +45,21 @@ export function MenuLateral({ nome, onSair, children }: Props) {
           <NavLink
             label="Consultas"
             leftSection={<IconCalendarEvent size={20} stroke={1.75} />}
-            active
+            active={pagina === 'consultas'}
+            onClick={() => abrir('consultas')}
             variant="filled"
             color="clinica.7"
-            c="white"
+            c={pagina === 'consultas' ? 'white' : 'clinica.1'}
+            style={{ borderRadius: 8 }}
+          />
+          <NavLink
+            label="Pacientes"
+            leftSection={<IconUsers size={20} stroke={1.75} />}
+            active={pagina === 'pacientes'}
+            onClick={() => abrir('pacientes')}
+            variant="filled"
+            color="clinica.7"
+            c={pagina === 'pacientes' ? 'white' : 'clinica.1'}
             style={{ borderRadius: 8 }}
           />
         </Stack>

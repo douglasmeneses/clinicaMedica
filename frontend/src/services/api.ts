@@ -49,3 +49,12 @@ export async function cadastrarConsulta(consulta: ConsultaInput) {
   const resposta = await api.post("/consultas", consulta);
   return resposta.data;
 }
+
+export async function atualizarConsulta(id: number, consulta: ConsultaInput) {
+  const resposta = await api.put(`/consultas/${id}`, consulta);
+  return resposta.data;
+}
+
+export async function deletarConsulta(id: number) {
+  await api.delete(`/consultas/${id}`);
+}

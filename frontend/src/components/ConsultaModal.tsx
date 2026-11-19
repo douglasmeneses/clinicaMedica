@@ -9,10 +9,11 @@ import {
   TextInput,
 } from "@mantine/core";
 import axios from "axios";
-import type { ConsultaInput } from "@clinica/shared/consulta";
+import type { Consulta, ConsultaInput } from "@clinica/shared/consulta";
 import type { Medico } from "@clinica/shared/medico";
 import type { Paciente } from "@clinica/shared/paciente";
 import {
+  atualizarConsulta,
   cadastrarConsulta,
   listarMedicos,
   listarPacientes,
@@ -20,11 +21,12 @@ import {
 
 type Props = {
   aberto: boolean;
+  consulta: Consulta | null; // null = consulta nova; preenchida = editar
   onFechar: () => void;
   onSalvo: () => void;
 };
 
-export function NovaConsultaModal({ aberto, onFechar, onSalvo }: Props) {
+export function ConsultaModal({ aberto, consulta, onFechar, onSalvo }: Props) {
   // As listas dos selects, que vêm da API
   const [pacientes, setPacientes] = useState<Paciente[]>([]);
   const [medicos, setMedicos] = useState<Medico[]>([]);
@@ -55,6 +57,16 @@ export function NovaConsultaModal({ aberto, onFechar, onSalvo }: Props) {
     buscarListas();
   }, []);
 
+  // Ao abrir para editar: preenche os campos com a consulta escolhida
+  useEffect(() => {
+    if (aberto && consulta) {
+      setPacienteId(String(consulta.pacienteId));
+      setMedicoId(String(consulta.medicoId));
+      setData(consulta.data);
+      setTurno(consulta.turno);
+    }
+  }, [aberto, consulta]);
+
   function fechar() {
     // Limpa tudo para a próxima vez que o modal abrir
     setPacienteId("");
@@ -72,12 +84,14 @@ export function NovaConsultaModal({ aberto, onFechar, onSalvo }: Props) {
     setCarregando(true);
     try {
       // O select guarda o id como texto ("3"); a API quer número (3)
-      await cadastrarConsulta({
+      const dados = {
         data,
         turno,
         medicoId: Number(medicoId),
         pacienteId: Number(pacienteId),
-      });
+      };
+      if (consulta) await atualizarConsulta(consulta.id, dados);
+      else await cadastrarConsulta(dados);
       onSalvo();
       fechar();
     } catch (e) {
@@ -99,7 +113,12 @@ export function NovaConsultaModal({ aberto, onFechar, onSalvo }: Props) {
   }
 
   return (
-    <Modal opened={aberto} onClose={fechar} title="Nova consulta" centered>
+    <Modal
+      opened={aberto}
+      onClose={fechar}
+      title={consulta ? "Editar consulta" : "Nova consulta"}
+      centered
+    >
       <form
         onSubmit={(evento) => {
           evento.preventDefault();

@@ -9,11 +9,10 @@ import {
   TextInput,
 } from "@mantine/core";
 import axios from "axios";
-import type { Consulta, ConsultaInput } from "@clinica/shared/consulta";
+import type { ConsultaInput } from "@clinica/shared/consulta";
 import type { Medico } from "@clinica/shared/medico";
 import type { Paciente } from "@clinica/shared/paciente";
 import {
-  atualizarConsulta,
   cadastrarConsulta,
   listarMedicos,
   listarPacientes,
@@ -23,10 +22,9 @@ type Props = {
   aberto: boolean;
   onFechar: () => void;
   onSalvo: () => void;
-  consulta: Consulta | null; //quando vier null é cadastro
 };
 
-export function ConsultaModal({ aberto, onFechar, onSalvo, consulta }: Props) {
+export function NovaConsultaModal({ aberto, onFechar, onSalvo }: Props) {
   // As listas dos selects, que vêm da API
   const [pacientes, setPacientes] = useState<Paciente[]>([]);
   const [medicos, setMedicos] = useState<Medico[]>([]);
@@ -52,16 +50,6 @@ export function ConsultaModal({ aberto, onFechar, onSalvo, consulta }: Props) {
     }
   }
 
-  useEffect(() => {
-    if (aberto && consulta) {
-      //clicou no icone de editar uma consulta | truly e falsy
-      setPacienteId(String(consulta.pacienteId));
-      setMedicoId(String(consulta.medicoId));
-      setData(consulta.data);
-      setTurno(consulta.turno);
-    }
-  }, [aberto, consulta]);
-
   // Busca pacientes e médicos uma vez, quando a Home aparece
   useEffect(() => {
     buscarListas();
@@ -82,16 +70,14 @@ export function ConsultaModal({ aberto, onFechar, onSalvo, consulta }: Props) {
     setErro("");
     setErrosDosCampos({});
     setCarregando(true);
-
-    const dadosConsulta = {
-      data,
-      turno,
-      medicoId: Number(medicoId),
-      pacienteId: Number(pacienteId),
-    };
     try {
-      if (consulta) await atualizarConsulta(consulta.id, dadosConsulta);
-      else await cadastrarConsulta(dadosConsulta);
+      // O select guarda o id como texto ("3"); a API quer número (3)
+      await cadastrarConsulta({
+        data,
+        turno,
+        medicoId: Number(medicoId),
+        pacienteId: Number(pacienteId),
+      });
       onSalvo();
       fechar();
     } catch (e) {
@@ -113,12 +99,7 @@ export function ConsultaModal({ aberto, onFechar, onSalvo, consulta }: Props) {
   }
 
   return (
-    <Modal
-      opened={aberto}
-      onClose={fechar}
-      title={consulta ? "Editar consulta" : "Nova consulta"}
-      centered
-    >
+    <Modal opened={aberto} onClose={fechar} title="Nova consulta" centered>
       <form
         onSubmit={(evento) => {
           evento.preventDefault();

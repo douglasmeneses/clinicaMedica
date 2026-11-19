@@ -68,7 +68,7 @@ export async function criarConsulta(dados: ConsultaInput): Promise<Consulta> {
 
   if (totalConsultasNoTurno >= LIMITE_CONSULTAS_POR_TURNO) {
     throw new Error(
-      `O médico Dr(a). ${medico.nome} já atingiu o limite de ${LIMITE_CONSULTAS_POR_TURNO} pacientes para o turno ${turnoNormalizado} no dia ${dados.data}.`,
+      `O médico ${medico.nome} já atingiu o limite de ${LIMITE_CONSULTAS_POR_TURNO} pacientes para o turno ${turnoNormalizado} no dia ${dados.data}.`,
     );
   }
 
@@ -136,7 +136,7 @@ export async function atualizarConsulta(
 
   if (totalConsultasNoTurno >= LIMITE_CONSULTAS_POR_TURNO) {
     throw new Error(
-      `O médico Dr(a). ${medico.nome} já atingiu o limite de ${LIMITE_CONSULTAS_POR_TURNO} pacientes para o turno ${turnoNormalizado} no dia ${dados.data}.`,
+      `O médico ${medico.nome} já atingiu o limite de ${LIMITE_CONSULTAS_POR_TURNO} pacientes para o turno ${turnoNormalizado} no dia ${dados.data}.`,
     );
   }
 

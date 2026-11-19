@@ -36,12 +36,12 @@ export function ConsultasPage() {
   }, []); // executa uma única vez, quando a tela aparece
 
   function abrirNova() {
-    setEmEdicao(null);
+    setEmEdicao(null); //não estou editando uma consulta mas criando do zero
     setModalAberto(true);
   }
 
   function abrirEdicao(consulta: Consulta) {
-    setEmEdicao(consulta);
+    setEmEdicao(consulta); //consulta já existe, então vamos editar
     setModalAberto(true);
   }
 
@@ -58,7 +58,7 @@ export function ConsultasPage() {
   }
 
   // Não é um estado novo: é calculado a cada desenho, a partir da lista e da busca
-  const visiveis = consultas.filter(
+  const visiveis: Consulta[] = consultas.filter(
     (consulta) =>
       consulta.paciente.nome.toLowerCase().includes(busca.toLowerCase()) ||
       consulta.medico.nome.toLowerCase().includes(busca.toLowerCase()),
